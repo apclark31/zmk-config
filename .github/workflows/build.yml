@@ -19,6 +19,10 @@ jobs:
           pip install west
           pip install pykwalify
 
+      - name: Clean previous workspace
+        run: |
+          rm -rf zmk-workspace
+
       - name: Create ZMK Workspace
         run: |
           mkdir zmk-workspace
