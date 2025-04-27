@@ -9,51 +9,55 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ZEPHYR_TOOLCHAIN_VARIANT: gnuarmemb
-    steps:
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y ninja-build gperf ccache dfu-util device-tree-compiler wget python3-pip python3-setuptools python3-wheel xz-utils file make gcc-arm-none-eabi
-          pip3 install "west>=1.3.0" keymap-drawer
 
-      - name: Setup ZMK workspace
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install West and Python deps
+        run: |
+          pip install west
+          pip install pykwalify
+
+      - name: Create ZMK Workspace
         run: |
           mkdir zmk-workspace
           cd zmk-workspace
-          west init -m https://github.com/zmkfirmware/zmk.git --mr main
+          west init -l ../config
           west update
-          west zephyr-export
-          pip3 install -r zephyr/scripts/requirements.txt
 
-      - name: Copy user config
+      - name: Build Left Half
         run: |
-          cp -r config zmk-workspace/app/config
+          cd zmk-workspace
+          west build -s app -b nice_nano_v2 -- -DSHIELD=sofle_left -DZMK_CONFIG="$(realpath ../config)"
 
-      - name: Build left side
-        working-directory: zmk-workspace/app
+      - name: Move Left Firmware
         run: |
-          west build -s . -b nice_nano_v2 -- -DSHIELD=sofle_left -DZMK_CONFIG=./config
-          mkdir -p ../../../output
-          cp build/zephyr/zmk.uf2 ../../../output/sofle_left.uf2
+          mkdir -p output
+          cp zmk-workspace/build/zephyr/zmk.uf2 output/sofle_left.uf2
 
-      - name: Build right side
-        working-directory: zmk-workspace/app
+      - name: Build Right Half
         run: |
-          west build -s . -b nice_nano_v2 -- -DSHIELD=sofle_right -DZMK_CONFIG=./config
-          cp build/zephyr/zmk.uf2 ../../../output/sofle_right.uf2
+          cd zmk-workspace
+          west build -s app -b nice_nano_v2 -- -DSHIELD=sofle_right -DZMK_CONFIG="$(realpath ../config)"
 
-      - name: Generate Keymap Drawer SVG
+      - name: Move Right Firmware
         run: |
-          mkdir -p output/keymap
-          keymap-drawer draw config/boards/shields/sofle/keymap.keymap -o output/keymap/
+          mkdir -p output
+          cp zmk-workspace/build/zephyr/zmk.uf2 output/sofle_right.uf2
+
+      - name: Generate Keymap JSON
+        run: |
+          cd zmk-workspace
+          west build -t output-keymap
+
+      - name: Move Keymap JSON
+        run: |
+          mkdir -p output
+          cp zmk-workspace/build/zephyr/zmk-keymap.json output/keymap.json
 
       - name: Upload Firmware and Keymap
         uses: actions/upload-artifact@v4
         with:
-          name: zmk-firmware-and-keymap
-          path: |
-            output/sofle_left.uf2
-            output/sofle_right.uf2
-            output/keymap/
+          name: firmware
+          path: output/
