@@ -22,7 +22,7 @@ jobs:
         run: |
           mkdir zmk-workspace
           cd zmk-workspace
-          west init -m https://github.com/zmkfirmware/zmk.git --mr develop
+          west init -m https://github.com/zmkfirmware/zmk.git --mr main
           west update
           west zephyr-export
           pip3 install -r zephyr/scripts/requirements.txt
