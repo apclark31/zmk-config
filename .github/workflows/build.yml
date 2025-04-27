@@ -24,7 +24,6 @@ jobs:
           cd zmk-workspace
           git clone --depth 1 https://github.com/ergomechstore/sofle-v2-oled-zmk.git firmware
           cd firmware
-          west init -l app
           west update
           west zephyr-export
           pip3 install -r zephyr/scripts/requirements.txt
