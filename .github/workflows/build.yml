@@ -18,32 +18,34 @@ jobs:
           sudo apt install -y ninja-build gperf ccache dfu-util device-tree-compiler wget python3-pip python3-setuptools python3-wheel xz-utils file make gcc-arm-none-eabi
           pip3 install "west>=1.3.0" keymap-drawer
 
-      - name: Create ZMK workspace
+      - name: Clone ZMK firmware (sofle-v2-oled-zmk fork)
         run: |
           mkdir zmk-workspace
           cd zmk-workspace
           export GIT_TERMINAL_PROMPT=0
-          west init -m https://github.com/ergomechstore/sofle-v2-oled-zmk.git --mr master
+          git clone --depth 1 https://github.com/ergomechstore/sofle-v2-oled-zmk.git firmware
+          cd firmware
+          west init -l app
           west update
           west zephyr-export
           pip3 install -r zephyr/scripts/requirements.txt
 
       - name: Copy user config
         run: |
-          cp -r config ./zmk-workspace/app/config
+          cp -r config ./zmk-workspace/firmware/app/config
 
       - name: Build left side
-        working-directory: zmk-workspace/app
+        working-directory: zmk-workspace/firmware/app
         run: |
           west build -s . -b nice_nano_v2 -- -DSHIELD=sofle_left -DZMK_CONFIG=./config
-          mkdir -p ../../output
-          cp build/zephyr/zmk.uf2 ../../output/sofle_left.uf2
+          mkdir -p ../../../output
+          cp build/zephyr/zmk.uf2 ../../../output/sofle_left.uf2
 
       - name: Build right side
-        working-directory: zmk-workspace/app
+        working-directory: zmk-workspace/firmware/app
         run: |
           west build -s . -b nice_nano_v2 -- -DSHIELD=sofle_right -DZMK_CONFIG=./config
-          cp build/zephyr/zmk.uf2 ../../output/sofle_right.uf2
+          cp build/zephyr/zmk.uf2 ../../../output/sofle_right.uf2
 
       - name: Generate Keymap Drawer SVG
         run: |
