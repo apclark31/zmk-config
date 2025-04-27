@@ -12,14 +12,7 @@ manifest:
     - name: zmk
       revision: main
       path: zmk
+      import: app/west.yml
 
   self:
     path: config
-
-  import:
-    path-prefix: deps
-    projects:
-      - name: zephyr
-        remote: zephyrproject
-        revision: main
-        import: true
