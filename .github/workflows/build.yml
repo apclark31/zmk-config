@@ -27,7 +27,7 @@ jobs:
         run: |
           mkdir zmk-workspace
           cd zmk-workspace
-          west init -l ../zmk-config
+          west init -l ..
           west update
 
       - name: Build Left Half
