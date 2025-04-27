@@ -1,8 +1,24 @@
 manifest:
+  defaults:
+    remote: zmkfirmware
+
+  remotes:
+    - name: zmkfirmware
+      url: https://github.com/zmkfirmware
+    - name: zephyrproject
+      url: https://github.com/zephyrproject-rtos
+
   projects:
     - name: zmk
-      url: https://github.com/zmkfirmware/zmk.git
+      repo-path: zmk
       revision: main
-      path: zmk
+      import:
+        path-prefix: deps
+        projects:
+          - name: zephyr
+            remote: zephyrproject
+            revision: main
+            import: true
+
   self:
     path: config
