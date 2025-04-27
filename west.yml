@@ -11,13 +11,15 @@ manifest:
   projects:
     - name: zmk
       revision: main
-      import:
-        path-prefix: deps
-        projects:
-          - name: zephyr
-            remote: zephyrproject
-            revision: main
-            import: true
+      path: zmk
 
   self:
     path: config
+
+  import:
+    path-prefix: deps
+    projects:
+      - name: zephyr
+        remote: zephyrproject
+        revision: main
+        import: true
