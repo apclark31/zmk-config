@@ -16,11 +16,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install West and Python deps
-        run: |
-          pip install west
-          pip install pykwalify
-
       - name: Clean previous workspace
         run: |
           rm -rf zmk-workspace
@@ -29,7 +24,9 @@ jobs:
         run: |
           mkdir zmk-workspace
           cd zmk-workspace
-          west init -l ..
+          west init -l ../zmk-config
+          rm -rf .west
+          west init -l ../zmk-config
           west update
 
       - name: Build Left Half
