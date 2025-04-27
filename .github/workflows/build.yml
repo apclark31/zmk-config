@@ -29,32 +29,32 @@ jobs:
       - name: Build Left Half
         run: |
           cd zmk-workspace
-          west build -s zmk/app -b nice_nano_v2 -- -DSHIELD=sofle_left -DZMK_CONFIG="$(realpath ../config)"
+          west build -s . -b nice_nano_v2 -- -DSHIELD=sofle_left -DZMK_CONFIG="$(realpath ../config)"
 
       - name: Move Left Firmware
         run: |
           mkdir -p output
-          cp zmk-workspace/build/zephyr/zmk.uf2 output/sofle_left.uf2
+          cp build/zephyr/zmk.uf2 output/sofle_left.uf2
 
       - name: Build Right Half
         run: |
           cd zmk-workspace
-          west build -s zmk/app -b nice_nano_v2 -- -DSHIELD=sofle_right -DZMK_CONFIG="$(realpath ../config)"
+          west build -s . -b nice_nano_v2 -- -DSHIELD=sofle_right -DZMK_CONFIG="$(realpath ../config)"
 
       - name: Move Right Firmware
         run: |
           mkdir -p output
-          cp zmk-workspace/build/zephyr/zmk.uf2 output/sofle_right.uf2
+          cp build/zephyr/zmk.uf2 output/sofle_right.uf2
 
       - name: Generate Keymap JSON
         run: |
           cd zmk-workspace
-          west build -s zmk/app -t output-keymap
+          west build -s . -t output-keymap
 
       - name: Move Keymap JSON
         run: |
           mkdir -p output
-          cp zmk-workspace/build/zephyr/zmk-keymap.json output/keymap.json
+          cp build/zephyr/zmk-keymap.json output/keymap.json
 
       - name: Upload Firmware and Keymap
         uses: actions/upload-artifact@v4
