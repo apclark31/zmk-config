@@ -34,7 +34,7 @@ jobs:
       - name: West Zephyr export
         run: west zephyr-export
       - name: Install/Upgrade CMake via pip
-        run: python 3 -n pip install
+        run: python 3 -m pip install
       - name: West Build (KEYBOARD_TITLE Left)
         run: west build -s zmk/app -b BOARD_NAME -- -DSHIELD=SHIELD_NAME_left -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
       - name: KEYBOARD_TITLE DTS File
