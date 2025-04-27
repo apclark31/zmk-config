@@ -1,63 +1,42 @@
-on: [push, pull_request, workflow_dispatch]
+# GitHub Actions Workflow (From ergomechstore)
+name: Build ZMK Firmware
 
-name: Build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: zmkfirmware/zmk-build-arm:2.5
-    name: Build
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Cache west modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-zephyr-modules
+      - uses: actions/checkout@v3
         with:
-          path: |
-            modules/
-            tools/
-            zephyr/
-            bootloader/
-            zmk/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('manifest-dir/west.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - name: West Init
-        run: west init -l config
-      - name: West Update
-        run: west update
-      - name: West Zephyr export
-        run: west zephyr-export
-      - name: Install/Upgrade CMake via pip
-        run: python 3 -m pip install
-      - name: West Build (KEYBOARD_TITLE Left)
-        run: west build -s zmk/app -b BOARD_NAME -- -DSHIELD=SHIELD_NAME_left -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
-      - name: KEYBOARD_TITLE DTS File
-        if: ${{ always() }}
-        run: cat -n build/zephyr/BOARD_NAME.dts.pre.tmp
-      - name: KEYBOARD_TITLE Left Kconfig file
-        run: cat build/zephyr/.config | grep -v "^#" | grep -v "^$"
-      - name: Rename zmk.uf2
-        run: cp build/zephyr/zmk.uf2 SHIELD_NAME_left_BOARD_NAME.uf2
-      - name: Archive (KEYBOARD_TITLE Left)
-        uses: actions/upload-artifact@v4
-        with:
-          name: firmware
-          path: SHIELD_NAME_left_BOARD_NAME.uf2
-      - name: West Build (KEYBOARD_TITLE Right)
-        run: west build --pristine -s zmk/app -b BOARD_NAME -- -DSHIELD=SHIELD_NAME_right -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+          submodules: recursive
 
-      - name: KEYBOARD_TITLE Right Kconfig file
-        run: cat build/zephyr/.config | grep -v "^#" | grep -v "^$"
-      - name: Rename zmk.uf2
-        run: cp build/zephyr/zmk.uf2 SHIELD_NAME_right_BOARD_NAME.uf2
-      - name: Archive (KEYBOARD_TITLE Right)
-        uses: actions/upload-artifact@v4
-        with:
-          name: firmware
-          path: SHIELD_NAME_right_BOARD_NAME.uf2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip ninja-build cmake gcc-arm-none-eabi gperf
+          pip3 install west
+          west init -l config
+          west update
+          west zephyr-export
+          pip3 install -r zephyr/scripts/requirements.txt
+
+      - name: Build Left
+        run: |
+          west build -s app -b nice_nano_v2 -- -DSHIELD=sofle_left -DZMK_CONFIG="$(pwd)/config"
+
+      - name: Build Right
+        run: |
+          west build -s app -b nice_nano_v2 -- -DSHIELD=sofle_right -DZMK_CONFIG="$(pwd)/config"
+
+      - name: Install Keymap Drawer
+        run: |
+          pip install keymap-drawer
+
+      - name: Generate Keymap SVG
+        run: |
+          keymap-drawer draw config/boards/shields/sofle/keymap.keymap -o output/

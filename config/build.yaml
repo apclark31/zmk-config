@@ -1,7 +1,0 @@
-# config/build.yaml
----
-include:
-  - board: nice_nano_v2    # Your microcontroller board
-    shield: sofle_left     # Build firmware for the left half
-  - board: nice_nano_v2    # Your microcontroller board
-    shield: sofle_right    # Build firmware for the right half
