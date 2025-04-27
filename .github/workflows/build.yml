@@ -22,6 +22,7 @@ jobs:
         run: |
           mkdir zmk-workspace
           cd zmk-workspace
+          export GIT_TERMINAL_PROMPT=0
           west init -m https://github.com/zmkfirmware/zmk-manifest.git --mr main
           west update
           west zephyr-export
