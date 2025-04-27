@@ -23,7 +23,7 @@ jobs:
           mkdir zmk-workspace
           cd zmk-workspace
           export GIT_TERMINAL_PROMPT=0
-          west init -m https://github.com/ergomechstore/sofle-v2-oled-zmk.git --mr main
+          west init -m https://github.com/ergomechstore/sofle-v2-oled-zmk.git --mr master
           west update
           west zephyr-export
           pip3 install -r zephyr/scripts/requirements.txt
